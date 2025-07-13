@@ -4,56 +4,83 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Inisialisasi simbol
-t = sp.Symbol('t')
+x = sp.Symbol('x')
 
-# Fungsi konsumsi air
-f = -t**2 + 6*t
+# Judul dan Deskripsi Aplikasi
+st.title("📘 Kalkulator Integral dan Turunan")
+st.markdown("""
+Aplikasi ini digunakan untuk menghitung **turunan** dan **integral** dari fungsi aljabar sederhana, 
+serta menampilkan grafik dan penjelasan konsep secara interaktif.
+""")
 
-# Turunan (laju konsumsi)
-f_prime = sp.diff(f, t)
+# Sidebar Input
+st.sidebar.header("🔢 Masukkan Fungsi")
+fungsi_input = st.sidebar.text_input("Masukkan fungsi f(x):", "x**2 + 3*x - 5")
+operasi = st.sidebar.radio("Pilih Operasi:", ["Turunan", "Integral Tak Tentu", "Integral Tentu"])
 
-# Titik maksimum konsumsi
-t_maks = sp.solve(f_prime, t)[0]
-konsumsi_maks = f.subs(t, t_maks)
+# Batas jika Integral Tentu
+if operasi == "Integral Tentu":
+    a = st.sidebar.number_input("Batas bawah a:", value=0.0)
+    b = st.sidebar.number_input("Batas atas b:", value=1.0)
 
-# Integral tentu (total air dikonsumsi dari jam 6–12 siang)
-total_konsumsi = sp.integrate(f, (t, 0, 6))
+# Proses dan Tampilkan Hasil
+try:
+    f = sp.sympify(fungsi_input)
+    st.markdown("### ✏️ Fungsi Aljabar:")
+    st.latex(f"f(x) = {sp.latex(f)}")
 
-# Tampilan aplikasi
-st.title("💧 Studi Kasus: Konsumsi Air Minum Harian")
-st.markdown("### Fungsi Laju Konsumsi Air:")
-st.latex("f(t) = -t^2 + 6t \quad \text{(liter per jam)}")
+    if operasi == "Turunan":
+        turunan = sp.diff(f, x)
+        st.markdown("### ✅ Hasil Turunan:")
+        st.latex(f"f'(x) = {sp.latex(turunan)}")
 
-# Turunan
-st.markdown("### 1️⃣ Turunan: Laju Perubahan Konsumsi Air")
-st.latex("f'(t) = " + sp.latex(f_prime))
+    elif operasi == "Integral Tak Tentu":
+        integral = sp.integrate(f, x)
+        st.markdown("### ✅ Hasil Integral Tak Tentu:")
+        st.latex(f"\\int f(x)\\,dx = {sp.latex(integral)} + C")
 
-st.markdown("### 2️⃣ Waktu Konsumsi Maksimum")
-st.write(f"Konsumsi maksimum terjadi pada t = {t_maks} jam setelah pukul 06.00 (yaitu pukul {6 + int(t_maks)}.00)")
-st.latex(f"f({t_maks}) = {konsumsi_maks} \text{{ liter per jam}}")
+    elif operasi == "Integral Tentu":
+        hasil_integral = sp.integrate(f, (x, a, b))
+        st.markdown(f"### ✅ Hasil Integral Tentu dari x = {a} hingga x = {b}:")
+        st.latex(f"\\int_{{{a}}}^{{{b}}} f(x)\\,dx = {sp.latex(hasil_integral)}")
 
-# Integral tentu
-st.markdown("### 3️⃣ Total Konsumsi Air dari Jam 06.00 - 12.00")
-st.latex(r"\int_0^6 f(t)\,dt = " + f"{total_konsumsi} \text{{ liter}}")
+    # Grafik Fungsi
+    st.markdown("### 📈 Grafik Fungsi")
+    f_np = sp.lambdify(x, f, "numpy")
+    x_vals = np.linspace(-10, 10, 400)
+    y_vals = f_np(x_vals)
 
-# Grafik
-st.markdown("### 📈 Grafik Konsumsi Air")
+    fig, ax = plt.subplots()
+    ax.plot(x_vals, y_vals, label=f"f(x) = {fungsi_input}")
+    ax.axhline(0, color='gray', linewidth=0.5)
+    ax.axvline(0, color='gray', linewidth=0.5)
+    ax.set_xlabel("x")
+    ax.set_ylabel("f(x)")
+    ax.set_title("Grafik f(x)")
+    ax.grid(True)
+    ax.legend()
+    st.pyplot(fig)
 
-# Konversi ke fungsi numerik
-f_np = sp.lambdify(t, f, "numpy")
-f_prime_np = sp.lambdify(t, f_prime, "numpy")
-t_vals = np.linspace(0, 6, 300)
+except Exception as e:
+    st.error(f"Terjadi kesalahan dalam memproses fungsi: {e}")
 
-fig, ax = plt.subplots()
-ax.plot(t_vals, f_np(t_vals), label='f(t): Laju Konsumsi Air', color='blue')
-ax.plot(t_vals, f_prime_np(t_vals), label="f'(t): Turunan", color='green', linestyle='--')
-ax.axvline(x=float(t_maks), color='red', linestyle=':', label='Maksimum Konsumsi')
-ax.set_xlabel("Waktu (jam sejak 06.00)")
-ax.set_ylabel("Liter per Jam")
-ax.legend()
-ax.grid(True)
-st.pyplot(fig)
-
-# Catatan akhir
+# Penjelasan Konsep (Edukatif)
 st.markdown("---")
-st.info("Dengan aplikasi ini, kita dapat memahami konsep turunan & integral dalam konteks nyata, seperti pola konsumsi air sehari-hari.")
+st.markdown("## 📚 Penjelasan Konsep")
+
+st.markdown("### 🔹 Turunan (Derivatif)")
+st.write("""
+Turunan menyatakan laju perubahan suatu fungsi terhadap variabel bebasnya. Dalam kehidupan nyata,
+turunan digunakan untuk mengetahui kecepatan, percepatan, atau pertumbuhan.
+""")
+st.latex("f'(x) = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}")
+
+st.markdown("### 🔹 Integral")
+st.write("""
+Integral digunakan untuk menghitung akumulasi, seperti luas area di bawah kurva, total jarak, 
+atau total biaya. Terdapat dua jenis:
+- **Integral Tak Tentu**: menghasilkan fungsi asli dari turunan
+- **Integral Tentu**: menghitung nilai total fungsi dalam interval [a, b]
+""")
+st.latex("\\int f(x)\\,dx = F(x) + C")
+st.latex("\\int_a^b f(x)\\,dx = F(b) - F(a)")
