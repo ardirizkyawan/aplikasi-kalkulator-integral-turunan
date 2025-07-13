@@ -3,62 +3,66 @@ import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Inisialisasi simbol x
-x = sp.Symbol('x')
+# Inisialisasi simbol
+t = sp.Symbol('t')
 
-st.title("🧮 Kalkulator Integral dan Turunan")
-st.write("Aplikasi ini menghitung turunan atau integral dari fungsi matematika aljabar.")
+# Fungsi posisi
+s = t**3 - 6*t**2 + 9*t
 
-# Contoh fungsi bawaan
-contoh_fungsi = {
-    "x**2": "x**2",
-    "sin(x)": "sin(x)",
-    "e**x": "exp(x)",
-    "1/x": "1/x"
-}
+# Turunan pertama (kecepatan)
+v = sp.diff(s, t)
 
-# Input fungsi
-fungsi_input = st.text_input("Masukkan fungsi f(x):", value="x**2")
+# Turunan kedua (percepatan)
+a = sp.diff(v, t)
 
-# Pilihan contoh
-st.markdown("Atau pilih contoh fungsi:")
-contoh_dipilih = st.selectbox("Contoh Fungsi:", list(contoh_fungsi.keys()))
-if contoh_dipilih:
-    fungsi_input = contoh_fungsi[contoh_dipilih]
+# Judul
+st.title("📌 Studi Kasus: Kalkulator Integral & Turunan")
+st.markdown("### Fungsi Posisi Benda:")
+st.latex("s(t) = t^3 - 6t^2 + 9t")
 
-# Pilih operasi
-operasi = st.radio("Pilih Operasi:", ("Turunan", "Integral Tak Tentu", "Integral Tentu"))
+# Menampilkan turunan pertama dan kedua
+st.markdown("### 1️⃣ Kecepatan (Turunan Pertama):")
+st.latex(f"v(t) = s'(t) = {sp.latex(v)}")
 
-# Hitung turunan/integral
-try:
-    fungsi = sp.sympify(fungsi_input)
-    
-    if operasi == "Turunan":
-        hasil = sp.diff(fungsi, x)
-        st.latex(f"f'(x) = {sp.latex(hasil)}")
+st.markdown("### 2️⃣ Percepatan (Turunan Kedua):")
+st.latex(f"a(t) = v'(t) = {sp.latex(a)}")
 
-    elif operasi == "Integral Tak Tentu":
-        hasil = sp.integrate(fungsi, x)
-        st.latex(f"\\int f(x)\\,dx = {sp.latex(hasil)} + C")
+# Integral tentu (perpindahan)
+st.markdown("### 3️⃣ Integral Tentu: Perpindahan dari t = 0 sampai t = 3")
+jarak = sp.integrate(s, (t, 0, 3))
+st.latex(r"\int_0^3 s(t)\,dt = " + f"{sp.latex(jarak)} \text{{ meter}}")
 
-    elif operasi == "Integral Tentu":
-        a = st.number_input("Batas bawah (a):", value=0.0)
-        b = st.number_input("Batas atas (b):", value=1.0)
-        hasil = sp.integrate(fungsi, (x, a, b))
-        st.latex(f"\\int_{{{a}}}^{{{b}}} f(x)\\,dx = {sp.latex(hasil)}")
+# Grafik fungsi
+st.markdown("### 📊 Visualisasi Fungsi")
 
-    # Tampilkan grafik
-    st.subheader("📈 Grafik Fungsi")
-    f_np = sp.lambdify(x, fungsi, "numpy")
-    x_vals = np.linspace(-10, 10, 400)
-    y_vals = f_np(x_vals)
+# Konversi fungsi ke bentuk numerik
+f_pos = sp.lambdify(t, s, 'numpy')
+f_vel = sp.lambdify(t, v, 'numpy')
+f_acc = sp.lambdify(t, a, 'numpy')
 
-    fig, ax = plt.subplots()
-    ax.plot(x_vals, y_vals, label=f"f(x) = {fungsi_input}")
-    ax.axhline(0, color='gray', linewidth=0.5)
-    ax.axvline(0, color='gray', linewidth=0.5)
-    ax.legend()
-    st.pyplot(fig)
+# Nilai x untuk grafik
+t_vals = np.linspace(0, 5, 400)
 
-except Exception as e:
-    st.error(f"Terjadi kesalahan saat memproses fungsi: {e}")
+fig, ax = plt.subplots(3, 1, figsize=(6, 10))
+
+# Grafik posisi
+ax[0].plot(t_vals, f_pos(t_vals), color='blue')
+ax[0].set_title('Fungsi Posisi s(t)')
+ax[0].grid(True)
+
+# Grafik kecepatan
+ax[1].plot(t_vals, f_vel(t_vals), color='green')
+ax[1].set_title('Fungsi Kecepatan v(t)')
+ax[1].grid(True)
+
+# Grafik percepatan
+ax[2].plot(t_vals, f_acc(t_vals), color='red')
+ax[2].set_title('Fungsi Percepatan a(t)')
+ax[2].grid(True)
+
+plt.tight_layout()
+st.pyplot(fig)
+
+# Penjelasan tambahan
+st.markdown("---")
+st.markdown("✅ Aplikasi ini menunjukkan bagaimana konsep turunan dan integral diterapkan untuk menganalisis gerak benda dalam konteks matematika terapan.")
