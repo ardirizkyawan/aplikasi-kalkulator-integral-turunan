@@ -6,63 +6,54 @@ import matplotlib.pyplot as plt
 # Inisialisasi simbol
 t = sp.Symbol('t')
 
-# Fungsi posisi
-s = t**3 - 6*t**2 + 9*t
+# Fungsi konsumsi air
+f = -t**2 + 6*t
 
-# Turunan pertama (kecepatan)
-v = sp.diff(s, t)
+# Turunan (laju konsumsi)
+f_prime = sp.diff(f, t)
 
-# Turunan kedua (percepatan)
-a = sp.diff(v, t)
+# Titik maksimum konsumsi
+t_maks = sp.solve(f_prime, t)[0]
+konsumsi_maks = f.subs(t, t_maks)
 
-# Judul
-st.title("📌 Studi Kasus: Kalkulator Integral & Turunan")
-st.markdown("### Fungsi Posisi Benda:")
-st.latex("s(t) = t^3 - 6t^2 + 9t")
+# Integral tentu (total air dikonsumsi dari jam 6–12 siang)
+total_konsumsi = sp.integrate(f, (t, 0, 6))
 
-# Menampilkan turunan pertama dan kedua
-st.markdown("### 1️⃣ Kecepatan (Turunan Pertama):")
-st.latex(f"v(t) = s'(t) = {sp.latex(v)}")
+# Tampilan aplikasi
+st.title("💧 Studi Kasus: Konsumsi Air Minum Harian")
+st.markdown("### Fungsi Laju Konsumsi Air:")
+st.latex("f(t) = -t^2 + 6t \quad \text{(liter per jam)}")
 
-st.markdown("### 2️⃣ Percepatan (Turunan Kedua):")
-st.latex(f"a(t) = v'(t) = {sp.latex(a)}")
+# Turunan
+st.markdown("### 1️⃣ Turunan: Laju Perubahan Konsumsi Air")
+st.latex("f'(t) = " + sp.latex(f_prime))
 
-# Integral tentu (perpindahan)
-st.markdown("### 3️⃣ Integral Tentu: Perpindahan dari t = 0 sampai t = 3")
-jarak = sp.integrate(s, (t, 0, 3))
-st.latex(r"\int_0^3 s(t)\,dt = " + f"{sp.latex(jarak)} \text{{ meter}}")
+st.markdown("### 2️⃣ Waktu Konsumsi Maksimum")
+st.write(f"Konsumsi maksimum terjadi pada t = {t_maks} jam setelah pukul 06.00 (yaitu pukul {6 + int(t_maks)}.00)")
+st.latex(f"f({t_maks}) = {konsumsi_maks} \text{{ liter per jam}}")
 
-# Grafik fungsi
-st.markdown("### 📊 Visualisasi Fungsi")
+# Integral tentu
+st.markdown("### 3️⃣ Total Konsumsi Air dari Jam 06.00 - 12.00")
+st.latex(r"\int_0^6 f(t)\,dt = " + f"{total_konsumsi} \text{{ liter}}")
 
-# Konversi fungsi ke bentuk numerik
-f_pos = sp.lambdify(t, s, 'numpy')
-f_vel = sp.lambdify(t, v, 'numpy')
-f_acc = sp.lambdify(t, a, 'numpy')
+# Grafik
+st.markdown("### 📈 Grafik Konsumsi Air")
 
-# Nilai x untuk grafik
-t_vals = np.linspace(0, 5, 400)
+# Konversi ke fungsi numerik
+f_np = sp.lambdify(t, f, "numpy")
+f_prime_np = sp.lambdify(t, f_prime, "numpy")
+t_vals = np.linspace(0, 6, 300)
 
-fig, ax = plt.subplots(3, 1, figsize=(6, 10))
-
-# Grafik posisi
-ax[0].plot(t_vals, f_pos(t_vals), color='blue')
-ax[0].set_title('Fungsi Posisi s(t)')
-ax[0].grid(True)
-
-# Grafik kecepatan
-ax[1].plot(t_vals, f_vel(t_vals), color='green')
-ax[1].set_title('Fungsi Kecepatan v(t)')
-ax[1].grid(True)
-
-# Grafik percepatan
-ax[2].plot(t_vals, f_acc(t_vals), color='red')
-ax[2].set_title('Fungsi Percepatan a(t)')
-ax[2].grid(True)
-
-plt.tight_layout()
+fig, ax = plt.subplots()
+ax.plot(t_vals, f_np(t_vals), label='f(t): Laju Konsumsi Air', color='blue')
+ax.plot(t_vals, f_prime_np(t_vals), label="f'(t): Turunan", color='green', linestyle='--')
+ax.axvline(x=float(t_maks), color='red', linestyle=':', label='Maksimum Konsumsi')
+ax.set_xlabel("Waktu (jam sejak 06.00)")
+ax.set_ylabel("Liter per Jam")
+ax.legend()
+ax.grid(True)
 st.pyplot(fig)
 
-# Penjelasan tambahan
+# Catatan akhir
 st.markdown("---")
-st.markdown("✅ Aplikasi ini menunjukkan bagaimana konsep turunan dan integral diterapkan untuk menganalisis gerak benda dalam konteks matematika terapan.")
+st.info("Dengan aplikasi ini, kita dapat memahami konsep turunan & integral dalam konteks nyata, seperti pola konsumsi air sehari-hari.")
